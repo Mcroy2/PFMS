@@ -261,7 +261,30 @@ function augustMerchantAllocations(r){
  ];
 }
 function confirmImport(){
- const {data,type}=window._csv;const chosen=data.filter(r=>r.approved);if(!chosen.length)return alert('Approve at least one row.');const missing=chosen.filter(r=>type!=='POS Sales'&&!isMerchantServiceRow(r)&&(!r.fund||!r.account));if(missing.length)return alert(`${missing.length} approved row(s) are missing a Fund or Account. Choose both before importing.`);
+ const {data,type}=window._csv;
+ const chosen=data.filter(r=>r.approved);
+ if(!chosen.length)return alert('Approve at least one row.');
+ const missing=chosen.filter(r=>type!=='POS Sales'&&!isMerchantServiceRow(r)&&(!r.fund||!r.account));
+ if(missing.length){
+  // Clear any previous missing-field highlighting.
+  $$('#csvPreview tbody tr').forEach(tr=>{tr.style.outline='';tr.style.background=''});
+  const details=missing.map(r=>{
+   const fields=[!r.fund?'Fund':'',!r.account?'Account':''].filter(Boolean).join(' and ');
+   return `CSV row ${r.sourceRow}: missing ${fields}`;
+  });
+  // Highlight every problem row and move the first one into view.
+  missing.forEach(r=>{
+   const i=data.indexOf(r);
+   const control=$(`[data-csv-i="${i}"][data-csv-k="fund"]`);
+   const tr=control?.closest('tr');
+   if(tr){tr.style.outline='3px solid #b42318';tr.style.outlineOffset='-3px';tr.style.background='#fff1f0'}
+  });
+  const firstIndex=data.indexOf(missing[0]);
+  const firstControl=$(`[data-csv-i="${firstIndex}"][data-csv-k="${!missing[0].fund?'fund':'account'}"]`);
+  firstControl?.scrollIntoView({behavior:'smooth',block:'center',inline:'center'});
+  setTimeout(()=>firstControl?.focus(),350);
+  return alert(`${missing.length} approved row(s) need attention:\n\n${details.join('\n')}\n\nPFMS highlighted the problem row(s) in red and moved you to the first missing field.`);
+ }
  let ledgerAdded=0,salesAdded=0,skipped=0;
  chosen.forEach(r=>{
   r.importFingerprint=importFingerprint(r);const duplicate=duplicateLedgerRow(r);

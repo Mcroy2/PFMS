@@ -1,4 +1,4 @@
-const CACHE='pfms-alpha-022-patch4-v1';
+const CACHE='pfms-023-csv-missing-row-fix-v1';
 const ASSETS=['./','./index.html','./styles.css','./pfms-core.js','./app.js','./app-022.js','./pfms-logo.png','./manifest.webmanifest','./README.html'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
